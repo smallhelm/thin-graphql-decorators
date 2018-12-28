@@ -1,0 +1,49 @@
+{
+  "name": "thin-graphql-decorators",
+  "version": "0.0.0",
+  "description": "Use GraphQL-js to create schemas, this library adds a few light-weight decorators to make things less verbose.",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smallhelm/thin-graphql-decorators.git"
+  },
+  "keywords": [
+    "graphql",
+    "decorators",
+    "lightweight",
+    "schema"
+  ],
+  "author": "farskipper",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smallhelm/thin-graphql-decorators/issues"
+  },
+  "homepage": "https://github.com/smallhelm/thin-graphql-decorators#readme",
+  "scripts": {
+    "test": "rm -rf dist && tsc && ava"
+  },
+  "dependencies": {
+    "get-parameter-names": "^0.3.0",
+    "reflect-metadata": "^0.1.12"
+  },
+  "peerDependencies": {
+    "graphql": "^14.0.2"
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.0.3",
+    "@types/node": "^10.12.18",
+    "ava": "^1.0.1",
+    "graphql": "^14.0.2",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.2"
+  },
+  "ava": {
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  }
+}
