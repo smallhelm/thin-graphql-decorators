@@ -1,6 +1,6 @@
 {
   "name": "thin-graphql-decorators",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Use GraphQL.js to create schemas, this library adds a few light-weight decorators that make object definitions less verbose.",
   "main": "index.js",
   "repository": {
