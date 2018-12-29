@@ -10,6 +10,8 @@ import {
   InputObjectType,
   ObjectType,
   Param,
+  ParamCtx,
+  ParamInfo,
   ParamB
 } from "./";
 
@@ -24,7 +26,7 @@ class Foo {
   @FieldB()
   three: boolean = true;
 
-  @FieldL({ type: GraphQLString })
+  @FieldL({ type: String })
   four(@Param() aaa: string): string[] {
     return [`hi`];
   }
@@ -48,8 +50,8 @@ class Query {
 
   @FieldB()
   hello(
-    @Param("context") ctx: any,
-    @Param("info") info: any,
+    @ParamCtx() ctx: any,
+    @ParamInfo() info: any,
     @ParamB() name: string
   ): string {
     return `Hello ${name}!`;
@@ -58,15 +60,15 @@ class Query {
 
 @ObjectType()
 class Mutation {
-  @FieldB()
-  foo(): Foo {
+  @FieldB({ type: Foo })
+  async foo(): Promise<Foo> {
     return new Foo();
   }
 
   @FieldB()
   hello(
-    @Param("context") ctx: any,
-    @Param("info") info: any,
+    @ParamCtx() ctx: any,
+    @ParamInfo() info: any,
     @ParamB() name: string
   ): string {
     return `Hello ${name}!`;

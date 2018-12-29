@@ -61,11 +61,11 @@ i.e. `ParamL` means an argument that is a list `[..!]!`
 
 #### @Param()
 
-#### @Param("context")
+#### @ParamCtx()
 
 Bind the decorated parameter to the schmea `context`.
 
-#### @Param("info")
+#### @ParamInfo()
 
 Bind the decorated parameter to the schmea `info`.
 

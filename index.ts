@@ -6,13 +6,11 @@ import {
   GraphQLFloat,
   GraphQLInputFieldConfigMap,
   GraphQLInputObjectType,
-  GraphQLInputType,
   GraphQLInterfaceType,
   GraphQLIsTypeOfFn,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLOutputType,
   GraphQLResolveInfo,
   GraphQLScalarType,
   GraphQLString,
@@ -68,6 +66,10 @@ function metaDataTypeToGQLType(
   return null;
 }
 
+function asGQL(t: any): any {
+  return metaDataTypeToGQLType(t) || t;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Decorators
@@ -101,7 +103,7 @@ export function ObjectType(conf: ObjectTypeConfig = {}): ClassDecorator {
 }
 
 export interface FieldConfig {
-  type?: GraphQLOutputType;
+  type?: any;
   deprecationReason?: Maybe<string>;
   description?: Maybe<string>;
 
@@ -139,19 +141,17 @@ export function Field(
       if (objFieldParams) {
         paramConfigs = objFieldParams.get(propertyKey) || new Map();
       }
-      const argOrder: ParamConfigArg[] = [];
-
+      const argOrder: ParamConfigWrap[] = [];
       for (let i = 0; i < Math.max(pnames.length, ptypes.length); i++) {
         const pname = pnames[i];
         const ptype = ptypes[i];
         const param = (paramConfigs && paramConfigs.get(i)) || { conf: {} };
-        const pconf = param.conf;
-        if (pconf === "context" || pconf === "info") {
-          argOrder.push(pconf);
+        argOrder.push(param);
+        if (param === "context" || param === "info") {
           continue;
         }
+        const pconf = param.conf;
         const name = (pconf.name = pconf.name || pname);
-        argOrder.push(pconf);
         args[name] = Object.assign(
           {},
           { type: metaDataTypeToGQLType(ptype) },
@@ -164,6 +164,7 @@ export function Field(
             }.${propertyKey}[${i}] - Cannot guess the parameter type, specify it with @Param({type: ..}) `
           );
         }
+        args[name].type = asGQL(args[name].type);
         if (param.typeWrap) {
           args[name].type = param.typeWrap(args[name].type);
         }
@@ -185,12 +186,12 @@ export function Field(
               argsOrder.push(info);
               break;
             default:
-              if (arg.name) {
-                argsOrder.push(args[arg.name]);
+              if (arg.conf.name) {
+                argsOrder.push(args[arg.conf.name]);
               }
           }
         }
-        daMethod.apply(source, argsOrder);
+        return daMethod.apply(source, argsOrder);
       };
     } else {
       guessType = metaDataTypeToGQLType(type);
@@ -212,6 +213,7 @@ export function Field(
         }.${propertyKey} - Cannot guess the GQL output type, specify it with @Field({type: ..}) `
       );
     }
+    qlFieldConfig.type = asGQL(qlFieldConfig.type);
     if (typeWrap) {
       qlFieldConfig.type = typeWrap(qlFieldConfig.type);
     }
@@ -224,20 +226,19 @@ export function Field(
 
 export interface ParamConfig {
   name?: string;
-  type?: GraphQLInputType;
+  type?: any;
   defaultValue?: any;
   description?: Maybe<string>;
 }
-type ParamConfigArg = "context" | "info" | ParamConfig;
-type ParamConfigWrap = {
-  conf: ParamConfigArg;
-  typeWrap?: (t: any) => any;
-};
+type ParamConfigWrap =
+  | "context"
+  | "info"
+  | {
+      conf: ParamConfig;
+      typeWrap?: (t: any) => any;
+    };
 
-export function Param(
-  conf: ParamConfigArg = {},
-  typeWrap?: (t: any) => any
-): ParameterDecorator {
+function makeParamDecorator(conf: ParamConfigWrap): ParameterDecorator {
   return function(target, propertyKey, parameterIndex) {
     if (typeof propertyKey !== "string") {
       throw new TypeError("Symbols are not supported");
@@ -246,10 +247,25 @@ export function Param(
       objectFieldParams.get(target) || new Map();
     const paramMap: Map<number, ParamConfigWrap> =
       fieldMap.get(propertyKey) || new Map();
-    paramMap.set(parameterIndex, { conf, typeWrap });
+    paramMap.set(parameterIndex, conf);
     fieldMap.set(propertyKey, paramMap);
     objectFieldParams.set(target, fieldMap);
   };
+}
+
+export function Param(
+  conf: ParamConfig = {},
+  typeWrap?: (t: any) => any
+): ParameterDecorator {
+  return makeParamDecorator({ conf, typeWrap });
+}
+
+export function ParamCtx(): ParameterDecorator {
+  return makeParamDecorator("context");
+}
+
+export function ParamInfo(): ParameterDecorator {
+  return makeParamDecorator("info");
 }
 
 export interface InputObjectTypeConfig {
@@ -280,7 +296,7 @@ export function InputObjectType(
 }
 
 export interface InputFieldConfig {
-  type?: GraphQLInputType;
+  type?: any;
   defaultValue?: any;
   description?: Maybe<string>;
 }
@@ -305,6 +321,7 @@ export function InputField(
         }.${propertyKey} - Cannot guess the GQL input type, specify it with @InputField({type: ..}) `
       );
     }
+    qlFieldConfig.type = asGQL(qlFieldConfig.type);
     if (typeWrap) {
       qlFieldConfig.type = typeWrap(qlFieldConfig.type);
     }
@@ -327,10 +344,10 @@ function wrapL(t: any) {
   return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(t)));
 }
 
-export function ParamB(conf: ParamConfigArg = {}) {
+export function ParamB(conf: ParamConfig = {}) {
   return Param(conf, wrapB);
 }
-export function ParamL(conf: ParamConfigArg = {}) {
+export function ParamL(conf: ParamConfig = {}) {
   return Param(conf, wrapL);
 }
 
