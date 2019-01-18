@@ -9,5 +9,5 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
   },
-  "include": ["index.ts"]
+  "include": ["index.ts", "test.ts"]
 }

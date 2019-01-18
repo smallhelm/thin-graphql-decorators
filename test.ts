@@ -42,11 +42,20 @@ class Bar {
 }
 
 @ObjectType()
+class Baz {
+  @Field()
+  circular?: Foo;
+}
+
+@ObjectType()
 class Query {
   @FieldB()
   foo(): Foo {
     return new Foo();
   }
+
+  @Field()
+  baz?: Baz;
 
   @FieldB()
   hello(
@@ -61,7 +70,7 @@ class Query {
 @ObjectType()
 class Mutation {
   @FieldB({ type: Foo })
-  async foo(): Promise<Foo> {
+  async foo(bar: Bar): Promise<Foo> {
     return new Foo();
   }
 
@@ -86,6 +95,15 @@ test("it", function(t) {
   t.is(
     schemaText.trim(),
     `
+input Bar {
+  one: String!
+  two: [Int!]!
+}
+
+type Baz {
+  circular: Foo
+}
+
 type Foo {
   one: String
   two: Float!
@@ -94,12 +112,13 @@ type Foo {
 }
 
 type Mutation {
-  foo: Foo!
+  foo(bar: Bar): Foo!
   hello(name: String!): String!
 }
 
 type Query {
   foo: Foo!
+  baz: Baz
   hello(name: String!): String!
 }
 `.trim()

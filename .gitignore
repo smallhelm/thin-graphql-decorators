@@ -1,5 +1,6 @@
 node_modules
 package-lock.json
 yarn.lock
-index.js*
-index.d*
+*.js
+*.js.map
+*.d.ts
