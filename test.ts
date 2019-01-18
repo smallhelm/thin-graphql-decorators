@@ -12,7 +12,8 @@ import {
   Param,
   ParamCtx,
   ParamInfo,
-  ParamB
+  ParamB,
+  InputField
 } from "./";
 
 @ObjectType()
@@ -30,6 +31,9 @@ class Foo {
   four(@Param() aaa: string): string[] {
     return [`hi`];
   }
+
+  @FieldL(() => ({ type: Baz }))
+  circular: Baz[] = [];
 }
 
 @InputObjectType()
@@ -39,12 +43,21 @@ class Bar {
 
   @InputFieldL({ type: GraphQLInt })
   two: number[] = [];
+
+  @InputFieldL(() => ({ type: Qux }))
+  circular?: Qux[];
 }
 
 @ObjectType()
 class Baz {
   @Field()
   circular?: Foo;
+}
+
+@InputObjectType()
+class Qux {
+  @InputField()
+  circular?: Bar;
 }
 
 @ObjectType()
@@ -98,6 +111,7 @@ test("it", function(t) {
 input Bar {
   one: String!
   two: [Int!]!
+  circular: [Qux!]!
 }
 
 type Baz {
@@ -109,6 +123,7 @@ type Foo {
   two: Float!
   three: Boolean!
   four(aaa: String): [String!]!
+  circular: [Baz!]!
 }
 
 type Mutation {
@@ -120,6 +135,10 @@ type Query {
   foo: Foo!
   baz: Baz
   hello(name: String!): String!
+}
+
+input Qux {
+  circular: Bar
 }
 `.trim()
   );
