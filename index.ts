@@ -393,7 +393,10 @@ function wrapB(t: any) {
   return new GraphQLNonNull(t);
 }
 function wrapL(t: any) {
-  return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(t)));
+  return new GraphQLList(new GraphQLNonNull(t));
+}
+function wrapLB(t: any) {
+  return wrapB(wrapL(t));
 }
 
 export function ParamB(conf?: Thunk<ParamConfig>) {
@@ -402,6 +405,9 @@ export function ParamB(conf?: Thunk<ParamConfig>) {
 export function ParamL(conf?: Thunk<ParamConfig>) {
   return Param(conf, wrapL);
 }
+export function ParamLB(conf?: Thunk<ParamConfig>) {
+  return Param(conf, wrapLB);
+}
 
 export function FieldB(conf?: Thunk<FieldConfig>) {
   return Field(conf, wrapB);
@@ -409,10 +415,16 @@ export function FieldB(conf?: Thunk<FieldConfig>) {
 export function FieldL(conf?: Thunk<FieldConfig>) {
   return Field(conf, wrapL);
 }
+export function FieldLB(conf?: Thunk<FieldConfig>) {
+  return Field(conf, wrapLB);
+}
 
 export function InputFieldB(conf?: Thunk<InputFieldConfig>) {
   return InputField(conf, wrapB);
 }
 export function InputFieldL(conf?: Thunk<InputFieldConfig>) {
   return InputField(conf, wrapL);
+}
+export function InputFieldLB(conf?: Thunk<InputFieldConfig>) {
+  return InputField(conf, wrapLB);
 }

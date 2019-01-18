@@ -50,16 +50,32 @@ The decorators take a single argument that allows you to configure the graphql t
 `Field`, `Param`, `InputField` all have a convenience variant that makes the type non-null or a list.
 
 - `B` - \_B_ang! i.e. `new GraphQLNonNull(t)` or `t!`
-- `L` - \_L_ist i.e. `new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(t)))` or `[t!]!`
+- `L` - \_L_ist i.e. `new GraphQLList(new GraphQLNonNull(t))` or `[t!]`
+- `LB` - a list that is not null i.e. `[t!]!`
 
 i.e. `FieldB` means a field that cannot be null `!`
-i.e. `ParamL` means an argument that is a list `[..!]!`
+i.e. `ParamL` means an argument that is a list `[..!]`
 
-### @ObjectType()
+If you have a circular dependancy, the `conf` can be wrapped in a thunk. i.e.
 
-#### @Field()
+```ts
+@ObjectType()
+class Foo {
+  // before
+  @FieldL({ type: Bar })
+  circular?: Bar[];
 
-#### @Param()
+  // after
+  @FieldL(() => ({ type: Bar }))
+  circular?: Bar[];
+}
+```
+
+### @ObjectType(conf?)
+
+#### @Field(conf?)
+
+#### @Param(conf?)
 
 #### @ParamCtx()
 
@@ -69,9 +85,9 @@ Bind the decorated parameter to the schmea `context`.
 
 Bind the decorated parameter to the schmea `info`.
 
-### @InputObjectType()
+### @InputObjectType(conf?)
 
-#### @InputField()
+#### @InputField(conf?)
 
 ### asGQLObject(c)
 
