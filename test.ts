@@ -5,8 +5,10 @@ import {
   Field,
   FieldB,
   FieldL,
+  FieldLB,
   InputFieldB,
   InputFieldL,
+  InputFieldLB,
   InputObjectType,
   ObjectType,
   Param,
@@ -32,7 +34,7 @@ class Foo {
     return [`hi`];
   }
 
-  @FieldL(() => ({ type: Baz }))
+  @FieldLB(() => ({ type: Baz }))
   circular: Baz[] = [];
 }
 
@@ -41,7 +43,7 @@ class Bar {
   @InputFieldB()
   one: string = "";
 
-  @InputFieldL({ type: GraphQLInt })
+  @InputFieldLB({ type: GraphQLInt })
   two: number[] = [];
 
   @InputFieldL(() => ({ type: Qux }))
@@ -111,7 +113,7 @@ test("it", function(t) {
 input Bar {
   one: String!
   two: [Int!]!
-  circular: [Qux!]!
+  circular: [Qux!]
 }
 
 type Baz {
@@ -122,7 +124,7 @@ type Foo {
   one: String
   two: Float!
   three: Boolean!
-  four(aaa: String): [String!]!
+  four(aaa: String): [String!]
   circular: [Baz!]!
 }
 
