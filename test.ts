@@ -1,5 +1,5 @@
 import test from "ava";
-import { GraphQLInt, printSchema, GraphQLSchema, GraphQLString } from "graphql";
+import { GraphQLInt, printSchema, GraphQLSchema, graphql } from "graphql";
 import {
   asGQLObject,
   Field,
@@ -93,13 +93,16 @@ class Mutation {
   hello(
     @ParamCtx() ctx: any,
     @ParamInfo() info: any,
-    @ParamB() name: string
+    @ParamB(() => ({
+      type: String // Testing param thunk
+    }))
+    name: string
   ): string {
     return `Hello ${name}!`;
   }
 }
 
-test("it", function(t) {
+test("it", async t => {
   const schema = new GraphQLSchema({
     query: asGQLObject(Query),
     mutation: asGQLObject(Mutation)
@@ -144,4 +147,22 @@ input Qux {
 }
 `.trim()
   );
+
+  const data = await graphql(
+    schema,
+    `
+      mutation hello($name: String!) {
+        hello(name: $name)
+      }
+    `,
+    null,
+    {}, // ctx
+    { name: "Bob" },
+    "hello"
+  );
+  t.deepEqual(data, {
+    data: {
+      hello: "Hello Bob!"
+    }
+  });
 });

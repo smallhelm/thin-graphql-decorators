@@ -10,7 +10,7 @@ There are _a lot_ of other graphql-schema builders that use decorators. (see [Al
 
 ```ts
 import { GraphQLSchema } from "graphql";
-import { asGQLObject, Field, ObjectType } from "./";
+import { asGQLObject, Field, ObjectType } from "thin-graphql-decorators";
 
 @ObjectType()
 class Query {

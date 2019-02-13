@@ -175,18 +175,19 @@ function buildField(
     if (objFieldParams) {
       paramConfigs = objFieldParams.get(propertyKey) || new Map();
     }
-    const argOrder: ParamConfigWrap[] = [];
+    const argOrder: ("context" | "info" | { name: string })[] = [];
     for (let i = 0; i < Math.max(pnames.length, ptypes.length); i++) {
       const pname = pnames[i];
       const ptype = ptypes[i];
       const param = (paramConfigs && paramConfigs.get(i)) || { conf: {} };
-      argOrder.push(param);
       if (param === "context" || param === "info") {
+        argOrder.push(param);
         continue;
       }
       const pconf =
         typeof param.conf === "function" ? param.conf() : param.conf;
       const name = (pconf.name = pconf.name || pname);
+      argOrder.push({ name });
       args[name] = Object.assign(
         {},
         { type: metaDataTypeToGQLType(ptype) },
@@ -221,8 +222,8 @@ function buildField(
             argsOrder.push(info);
             break;
           default:
-            if (arg.conf.name) {
-              argsOrder.push(args[arg.conf.name]);
+            if (arg.name) {
+              argsOrder.push(args[arg.name]);
             }
         }
       }
