@@ -15,7 +15,7 @@ import {
   ParamCtx,
   ParamInfo,
   ParamB,
-  InputField
+  InputField,
 } from "./";
 
 @ObjectType()
@@ -94,7 +94,7 @@ class Mutation {
     @ParamCtx() ctx: any,
     @ParamInfo() info: any,
     @ParamB(() => ({
-      type: String // Testing param thunk
+      type: String, // Testing param thunk
     }))
     name: string
   ): string {
@@ -102,10 +102,10 @@ class Mutation {
   }
 }
 
-test("it", async t => {
+test("it", async (t) => {
   const schema = new GraphQLSchema({
     query: asGQLObject(Query),
-    mutation: asGQLObject(Mutation)
+    mutation: asGQLObject(Mutation),
   });
 
   const schemaText = printSchema(schema, { commentDescriptions: true });
@@ -113,14 +113,10 @@ test("it", async t => {
   t.is(
     schemaText.trim(),
     `
-input Bar {
-  one: String!
-  two: [Int!]!
-  circular: [Qux!]
-}
-
-type Baz {
-  circular: Foo
+type Query {
+  foo: Foo!
+  baz: Baz
+  hello(name: String!): String!
 }
 
 type Foo {
@@ -131,15 +127,19 @@ type Foo {
   circular: [Baz!]!
 }
 
+type Baz {
+  circular: Foo
+}
+
 type Mutation {
   foo(bar: Bar): Foo!
   hello(name: String!): String!
 }
 
-type Query {
-  foo: Foo!
-  baz: Baz
-  hello(name: String!): String!
+input Bar {
+  one: String!
+  two: [Int!]!
+  circular: [Qux!]
 }
 
 input Qux {
@@ -162,7 +162,7 @@ input Qux {
   );
   t.deepEqual(data, {
     data: {
-      hello: "Hello Bob!"
-    }
+      hello: "Hello Bob!",
+    },
   });
 });

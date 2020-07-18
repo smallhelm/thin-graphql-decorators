@@ -1,9 +1,11 @@
 import {
   GraphQLBoolean,
+  GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldResolver,
   GraphQLFloat,
+  GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -15,12 +17,11 @@ import {
   GraphQLScalarType,
   GraphQLString,
   Thunk,
-  GraphQLFieldConfig,
-  GraphQLInputFieldConfig
 } from "graphql";
-import Maybe from "graphql/tsutils/Maybe";
 import "reflect-metadata";
 const getParameterNames = require("get-parameter-names");
+
+type Maybe<T> = T | null | undefined;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -98,7 +99,7 @@ export interface ObjectTypeConfig {
 }
 
 export function ObjectType(conf: ObjectTypeConfig = {}): ClassDecorator {
-  return function(daClass) {
+  return function (daClass) {
     const target = daClass.prototype;
     objectsBuilt.set(
       daClass,
@@ -120,7 +121,7 @@ export function ObjectType(conf: ObjectTypeConfig = {}): ClassDecorator {
                 }
               }
               return fields;
-            }
+            },
           },
           conf
         )
@@ -143,7 +144,7 @@ export function Field(
   conf: Thunk<FieldConfig> = {},
   typeWrap?: (t: any) => any
 ): PropertyDecorator {
-  return function(target, propertyKey) {
+  return function (target, propertyKey) {
     if (typeof propertyKey !== "string") {
       throw new TypeError("Symbols are not supported");
     }
@@ -195,9 +196,7 @@ function buildField(
       );
       if (!args[name].type) {
         throw new TypeError(
-          `${
-            target.constructor.name
-          }.${propertyKey}[${i}] - Cannot guess the parameter type, specify it with @Param({type: ..}) `
+          `${target.constructor.name}.${propertyKey}[${i}] - Cannot guess the parameter type, specify it with @Param({type: ..}) `
         );
       }
       args[name].type = asGQL(args[name].type);
@@ -206,7 +205,7 @@ function buildField(
       }
     }
     guessType = metaDataTypeToGQLType(rtype);
-    resolve = function(
+    resolve = function (
       source: any,
       args: any,
       context: any,
@@ -238,15 +237,13 @@ function buildField(
     {
       type: guessType,
       args,
-      resolve
+      resolve,
     },
     conf
   );
   if (!qlFieldConfig.type) {
     throw new TypeError(
-      `${
-        target.constructor.name
-      }.${propertyKey} - Cannot guess the GQL output type, specify it with @Field({type: ..}) `
+      `${target.constructor.name}.${propertyKey} - Cannot guess the GQL output type, specify it with @Field({type: ..}) `
     );
   }
   qlFieldConfig.type = asGQL(qlFieldConfig.type);
@@ -271,7 +268,7 @@ type ParamConfigWrap =
     };
 
 function makeParamDecorator(conf: ParamConfigWrap): ParameterDecorator {
-  return function(target, propertyKey, parameterIndex) {
+  return function (target, propertyKey, parameterIndex) {
     if (typeof propertyKey !== "string") {
       throw new TypeError("Symbols are not supported");
     }
@@ -310,7 +307,7 @@ export interface InputObjectTypeConfig {
 export function InputObjectType(
   conf: InputObjectTypeConfig = {}
 ): ClassDecorator {
-  return function(daClass) {
+  return function (daClass) {
     const target = daClass.prototype;
     inputObjectsBuilt.set(
       daClass,
@@ -332,7 +329,7 @@ export function InputObjectType(
                 }
               }
               return fields;
-            }
+            },
           },
           conf
         )
@@ -351,7 +348,7 @@ export function InputField(
   conf: Thunk<InputFieldConfig> = {},
   typeWrap?: (t: any) => any
 ): PropertyDecorator {
-  return function(target, propertyKey) {
+  return function (target, propertyKey) {
     if (typeof propertyKey !== "string") {
       throw new TypeError("Symbols are not supported");
     }
@@ -373,9 +370,7 @@ function buildInputField(
   const qlFieldConfig = Object.assign({}, { type: guessType }, conf);
   if (!qlFieldConfig.type) {
     throw new TypeError(
-      `${
-        target.constructor.name
-      }.${propertyKey} - Cannot guess the GQL input type, specify it with @InputField({type: ..}) `
+      `${target.constructor.name}.${propertyKey} - Cannot guess the GQL input type, specify it with @InputField({type: ..}) `
     );
   }
   qlFieldConfig.type = asGQL(qlFieldConfig.type);
